@@ -1,0 +1,12 @@
+node_modules/
+.claude/
+instagram_data.json
+scrape-instagram.js
+scrape_instagram.js
+src/
+tsconfig*.json
+vite.config.ts
+package*.json
+INSTRUCCIONES.md
+assets/.readme
+assets/instagram/
