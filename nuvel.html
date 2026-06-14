@@ -1085,6 +1085,8 @@ footer {
   var isDragging = false;
   var isAnimating = false;
   var startX = 0;
+  var startY = 0;
+  var swipeDir = null;
   var currentDX = 0;
 
   projects.forEach(function (p) {
@@ -1094,7 +1096,7 @@ footer {
       '<img class="tcard-img" src="' + p.img + '" alt="' + p.name + '" loading="lazy">' +
       '<div class="tcard-meta"><span class="tcard-name">' + p.name + '</span><span class="tcard-badge">' + p.type + '</span></div>' +
       '<p class="tcard-quote">"' + p.quote + '"</p>' +
-      '<div class="tcard-author"><span>' + p.author + '</span><a href="' + p.url + '" target="_blank" rel="noopener" class="tcard-link">Ver sitio →</a></div>';
+      '<div class="tcard-author"><a href="' + p.url + '" target="_blank" rel="noopener" class="tcard-link">Ver sitio →</a></div>';
     cards.push(el);
     stack.appendChild(el);
   });
@@ -1185,21 +1187,30 @@ footer {
     if (isAnimating || !frontCard().contains(e.target)) return;
     isDragging = true;
     startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    swipeDir = null;
     currentDX = 0;
   }, { passive: true });
 
   document.addEventListener('touchmove', function (e) {
     if (!isDragging) return;
-    currentDX = e.touches[0].clientX - startX;
+    var dx = e.touches[0].clientX - startX;
+    var dy = e.touches[0].clientY - startY;
+    if (swipeDir === null) {
+      swipeDir = Math.abs(dx) > Math.abs(dy) ? 'h' : 'v';
+    }
+    if (swipeDir === 'v') return; // let page scroll normally
+    e.preventDefault(); // block page scroll for horizontal swipe
+    currentDX = dx;
     var fc = frontCard();
     fc.style.transition = 'none';
     fc.style.transform = 'rotate(calc(-6deg + ' + (currentDX * 0.04) + 'deg)) translateX(' + currentDX + 'px)';
-  }, { passive: true });
+  }, { passive: false });
 
   document.addEventListener('touchend', function () {
     if (!isDragging) return;
     isDragging = false;
-    if (Math.abs(currentDX) > 80) {
+    if (swipeDir === 'h' && Math.abs(currentDX) > 80) {
       flyOut(currentDX < 0 ? -1 : 1);
     } else {
       var fc = frontCard();
@@ -1207,6 +1218,7 @@ footer {
       fc.style.transform = '';
     }
     currentDX = 0;
+    swipeDir = null;
   });
 })();
 
